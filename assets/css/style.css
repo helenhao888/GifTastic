@@ -1,0 +1,17 @@
+body{
+    background-image: linear-gradient(to right,rgb(185, 51, 51),orange,yellow,green,blue,indigo,violet);
+    /* color:l */
+}
+
+
+
+.btnClass{
+    margin: 10px;
+    min-width:80px;
+    
+}
+
+i,label{
+    color:white;
+}
+
