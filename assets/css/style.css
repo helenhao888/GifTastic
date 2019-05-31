@@ -15,3 +15,8 @@ i,label{
     color:white;
 }
 
+.imgBox{
+    display:inline-block;
+    margin:15px;    
+}
+
