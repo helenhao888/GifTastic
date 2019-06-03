@@ -1,18 +1,17 @@
 body{
     background-image: linear-gradient(to right,rgb(185, 51, 51),orange,yellow,green,blue,indigo,violet);
-  
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
 }
-
-
 
 .btnClass{
     margin: 10px;
-    min-width:80px;
-    
+    min-width:80px;    
 }
 
-i,label{
+label,a {
     color:white;
+    font-weight: bold;
 }
 
 .imgBox{
@@ -20,3 +19,16 @@ i,label{
     margin:15px;    
 }
 
+.title{
+    color:blue;
+    font-weight: bold;
+}
+
+.addFavorite{
+    margin:10px;
+    color:white;
+}
+
+.myFavorite{
+    color:white;
+}

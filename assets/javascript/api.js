@@ -2,11 +2,18 @@ var topics=["rabbit","panda","dog","bird","cat","monkey","kangaroo","koala","gir
 //the extTopics is extened topics which includes the initial topics and the user added topics
 var extTopics=topics;
 var animalDupFlg=false;
+var topicName="";
+var offsetNum=0;
+const limitNum=10;
+//Favorite Array is an object array. The structure of object includes title, rating and image url
+var favoriteArr=[];
+var images=[];
+// var images={title:"",rating:"",url:"",stillImage:"",animateImage:""};
 
 $(document).ready(function(){
 
 //create initial buttons from array topics
-topics.forEach(createBtn);
+topics.forEach(createBtn);  
 
 //create  button from the each value in array topics
 function createBtn(value){
@@ -17,6 +24,8 @@ function createBtn(value){
     $(".buttonsBox").append(btn);
 }
 
+
+
 //when one of the animal buttons is clicked, call the displayFunction
 $(document).on("click", ".btnClass",displayFunction);
 
@@ -24,22 +33,28 @@ $(document).on("click", ".btnClass",displayFunction);
 function displayFunction(){   
     $(".main").empty();
     console.log("click new", $(this).text());
-    var topicName=$(this).text();
+    topicName=$(this).text();
     getImgFunction(topicName);
 
-    //create More link to allow user to get more images
-    // var moreLink=$("<a>",{id:more,text:"More",href:'#',click:function(){getImgFunction();}});
-    // var moreLink=$("<a>").text("More");
-    // moreLink.attr("href","javascript:getImgFunction(topicName);");
-    // console.log("morelink",moreLink);
+    // //create More link to allow user to get more images
+    // var moreLink=$("<a>").text("More"); 
+    // moreLink.attr({href:"#",onclick:function(){getImgFunction(topicName);return false},id:"more"});
+    
     // $(".main").append(moreLink);
+  
 
 }
 
-//API call to get the images and other information about the topic and display them
-function getImgFunction(name){
 
-    var queryUrl="https://api.giphy.com/v1/gifs/search?q="+name+"&api_key=UbE45OaEiLjCyYNkPzfusZ5qgMoEAKOF&limit=10";
+// $(document).on("click","#more",getImgFunction(topicName));
+
+
+//API call to get the images and other information about the topic and display them
+function getImgFunction(inputName){
+
+    console.log("call image func",inputName);
+    var queryUrl="https://api.giphy.com/v1/gifs/search?q="+inputName+"&api_key=UbE45OaEiLjCyYNkPzfusZ5qgMoEAKOF&limit="+limitNum+"&offset="+offsetNum;
+   
 
     $.ajax({
         url: queryUrl,
@@ -49,21 +64,38 @@ function getImgFunction(name){
       
          console.log("data",response.data);
         var results=response.data;
+
         //from the resonse data, create image tag and other information's tag 
+       
+
         for(var i=0;i<results.length;i++){
+            var title= results[i].title;
+            var rating=results[i].rating;
+            var url= results[i].images.fixed_height_small_still.url;
+            var stillImage=results[i].images.fixed_height_small_still.url;
+            var animateImage=results[i].images.fixed_height_small.url;
+            
+            // images.push({title:title,rating:rating,url:url,still:stillImage,animate:animateImage});
+            
+            // createImgBoxFunc(images);
+            
             var divBox=$("<div>").addClass("imgBox");
-            var msgDiv=$("<div>").text("Rating: "+ response.data[i].rating);
-            var imgStillUrl=response.data[i].images.fixed_height_small_still.url;
-            var imgAnimateUrl=response.data[i].images.fixed_height_small.url;
+            var titleDiv=$("<div>").text("Title: " + results[i].title);
+            titleDiv.addClass("title");
+            var msgDiv=$("<div>").text("Rating: "+ results[i].rating);
+            msgDiv.addClass("rating");
+            var imgStillUrl=results[i].images.fixed_height_small_still.url;
+            var imgAnimateUrl=results[i].images.fixed_height_small.url;
             var imgDiv=$("<img>");
             imgDiv.attr({src:imgStillUrl,imageState:"still"});
             imgDiv.attr("data-animate",imgAnimateUrl);
             imgDiv.attr("data-still",imgStillUrl).addClass("img");
-            divBox.append(msgDiv,imgDiv);
+            var favoriteDiv=$("<i>").addClass("fa fa-heart addFavorite");
+            divBox.append(titleDiv,msgDiv,favoriteDiv,imgDiv);
             $(".main").append(divBox);
-        }
-        
-        
+            // offsetNum++;
+            // console.log("offset",offsetNum);
+        }        
 
     });
 }
@@ -105,6 +137,68 @@ function imgSwitchFunc(){
       $(this).attr("imageState","still");
     }
 
+}
+
+$(document).on("click",".addFavorite",addFavFunction);
+
+function addFavFunction(){
+    var titleFav=$(this).siblings(".title").text();
+    var ratingFav=$(this).siblings(".rating").text();
+    var imgFav=$(this).siblings(".img").attr("src");
+    var stillFav=$(this).siblings(".img").attr("data-still");
+    var animateFav=$(this).siblings(".img").attr("data-animate");
+    // add the favoritee picture to favoriteArr
+    favoriteArr.push({title:titleFav,rating:ratingFav,url:imgFav,still:stillFav,animate:animateFav});
+    console.log("arr",favoriteArr);
+
+    localStorage.setItem("favorite",JSON.stringify(favoriteArr));
+}
+
+$(".myFavorite").on("click",function(){
+    console.log("my favorite");
+    var getFav=JSON.parse(localStorage.getItem("favorite"));
+    console.log("getfav",getFav);
+    $(".main").empty();
+    // createImgBoxFunc(getFav);
+    for (var j=0;j<getFav.length;j++){
+        var divBox=$("<div>").addClass("imgBox");
+        var titleDiv=$("<div>").text("Title: " + getFav[j].title);
+        titleDiv.addClass("title");
+        var msgDiv=$("<div>").text("Rating: "+ getFav[j].rating);
+        msgDiv.addClass("rating");
+        var imgStillUrl=getFav[j].still;
+        var imgAnimateUrl=getFav[j].animate;
+        var imgDiv=$("<img>");
+        imgDiv.attr({src:imgStillUrl,imageState:"still"});
+        imgDiv.attr("data-animate",imgAnimateUrl);
+        imgDiv.attr("data-still",imgStillUrl).addClass("img");        
+        divBox.append(titleDiv,msgDiv,imgDiv);
+        $(".main").append(divBox);
+    }
+})
+
+function createImgBoxFunc(input){
+
+    
+        
+        
+        var divBox=$("<div>").addClass("imgBox");
+        var titleDiv=$("<div>").text("Title: " + input.title);
+        titleDiv.addClass("title");
+        var msgDiv=$("<div>").text("Rating: "+ input.rating);
+        msgDiv.addClass("rating");
+        var imgStillUrl=input.stillImage;
+        var imgAnimateUrl=input.animateImage;
+        var imgDiv=$("<img>");
+        imgDiv.attr({src:imgStillUrl,imageState:"still"});
+        imgDiv.attr("data-animate",imgAnimateUrl);
+        imgDiv.attr("data-still",imgStillUrl).addClass("img");
+        var favoriteDiv=$("<i>").addClass("fa fa-heart addFavorite");
+        divBox.append(titleDiv,msgDiv,favoriteDiv,imgDiv);
+        $(".main").append(divBox);
+        // offsetNum++;
+        // console.log("offset",offsetNum);
+    
 }
 
 //Check duplicate topics process
