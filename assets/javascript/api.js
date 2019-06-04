@@ -12,8 +12,14 @@ var images=[];
 
 $(document).ready(function(){
 
-//create initial buttons from array topics
-topics.forEach(createBtn);  
+    initialFun();
+
+function initialFun(){    
+    //create initial buttons from array topics
+    topics.forEach(createBtn);  
+    //get the favorites from localstorage and store in favorite Array
+    favoriteArr=JSON.parse(localStorage.getItem("favorite"));
+}
 
 //create  button from the each value in array topics
 function createBtn(value){
@@ -36,17 +42,17 @@ function displayFunction(){
     topicName=$(this).text();
     getImgFunction(topicName);
 
-    // //create More link to allow user to get more images
-    // var moreLink=$("<a>").text("More"); 
-    // moreLink.attr({href:"#",onclick:function(){getImgFunction(topicName);return false},id:"more"});
-    
-    // $(".main").append(moreLink);
-  
+    //create More link to allow user to get more images
+    var moreLink=$("<a>").text("More"); 
+    // moreLink.attr({'href':'#','onclick':'function(){getImgFunction(topicName);return false}','id':'more'});
+    // moreLink.attr({'href':'#','onclick':'getImgFunction(topicName)','id':'more'});
+    // moreLink.attr('onclick','getImgFunction(topicName)');
+    moreLink.attr('href','#');
+    moreLink.attr('id','more');
+    $(".main").append(moreLink);  
 
 }
 
-
-// $(document).on("click","#more",getImgFunction(topicName));
 
 
 //API call to get the images and other information about the topic and display them
@@ -69,15 +75,12 @@ function getImgFunction(inputName){
        
 
         for(var i=0;i<results.length;i++){
-            var title= results[i].title;
-            var rating=results[i].rating;
-            var url= results[i].images.fixed_height_small_still.url;
-            var stillImage=results[i].images.fixed_height_small_still.url;
-            var animateImage=results[i].images.fixed_height_small.url;
+            // var title= results[i].title;
+            // var rating=results[i].rating;
+            // var url= results[i].images.fixed_height_small_still.url;
+            // var stillImage=results[i].images.fixed_height_small_still.url;
+            // var animateImage=results[i].images.fixed_height_small.url;            
             
-            // images.push({title:title,rating:rating,url:url,still:stillImage,animate:animateImage});
-            
-            // createImgBoxFunc(images);
             
             var divBox=$("<div>").addClass("imgBox");
             var titleDiv=$("<div>").text("Title: " + results[i].title);
@@ -88,9 +91,10 @@ function getImgFunction(inputName){
             var imgAnimateUrl=results[i].images.fixed_height_small.url;
             var imgDiv=$("<img>");
             imgDiv.attr({src:imgStillUrl,imageState:"still"});
-            imgDiv.attr("data-animate",imgAnimateUrl);
+            imgDiv.attr({"data-animate":imgAnimateUrl,"fav-status":false});
             imgDiv.attr("data-still",imgStillUrl).addClass("img");
             var favoriteDiv=$("<i>").addClass("fa fa-heart addFavorite");
+            favoriteDiv.attr("fav-status","no");
             divBox.append(titleDiv,msgDiv,favoriteDiv,imgDiv);
             $(".main").append(divBox);
             // offsetNum++;
@@ -99,6 +103,10 @@ function getImgFunction(inputName){
 
     });
 }
+
+$(document).on("click","#more",getImgFunction(topicName));
+
+
 //When the subbmit button is clicked, add new button for the input animal
  $("#addSubmit").on("click",function(event){
     event.preventDefault();
@@ -139,20 +147,49 @@ function imgSwitchFunc(){
 
 }
 
-$(document).on("click",".addFavorite",addFavFunction);
+$(document).on("click",".addFavorite",favFunction);
 
-function addFavFunction(){
-    var titleFav=$(this).siblings(".title").text();
-    var ratingFav=$(this).siblings(".rating").text();
-    var imgFav=$(this).siblings(".img").attr("src");
-    var stillFav=$(this).siblings(".img").attr("data-still");
-    var animateFav=$(this).siblings(".img").attr("data-animate");
+function favFunction(){
+    console.log("this",$(this));
+    console.log("fav status",$(this).attr("fav-status"));
+    var favFlg=$(this).attr("fav-status");
+    var favbt=$(this);
+    if(favFlg==="yes"){
+        console.log("del fav");
+        deleteFavFunction(favbt);
+    }else{
+        
+        console.log("add fav");
+        addFavFunction(favbt);
+    }
+}
+
+function addFavFunction(favorites){
+    var titleFav=favorites.siblings(".title").text();
+    var ratingFav=favorites.siblings(".rating").text();
+    var imgFav=favorites.siblings(".img").attr("src");
+    var stillFav=favorites.siblings(".img").attr("data-still");
+    var animateFav=favorites.siblings(".img").attr("data-animate");
+
+    console.log("title",titleFav);
+    console.log("rate",ratingFav);
+    console.log("farr",favoriteArr);
     // add the favoritee picture to favoriteArr
-    favoriteArr.push({title:titleFav,rating:ratingFav,url:imgFav,still:stillFav,animate:animateFav});
-    console.log("arr",favoriteArr);
+    favoriteArr.push({title:titleFav,rating:ratingFav,url:imgFav,still:stillFav,animate:animateFav});    
+
+    favorites.attr("fav-status","yes");
+    favorites.css("color","red");
 
     localStorage.setItem("favorite",JSON.stringify(favoriteArr));
 }
+
+function deleteFavFunction(favorites){
+
+    favorites.attr("fav-status","no");
+    favorites.css("color","white");
+
+}
+
 
 $(".myFavorite").on("click",function(){
     console.log("my favorite");
